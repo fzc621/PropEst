@@ -16,7 +16,6 @@ def load_query(path):
     return queries
 
 def dump_query(queries, path):
-    queries = []
     with open(path, 'w') as fout:
         for query in queries:
             for doc in query._docs:
