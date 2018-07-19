@@ -32,6 +32,8 @@ if __name__ == '__main__':
 
     slice0 = queries[:slice_size]
     slice1 = slice0[:overlap_size] + queries[slice_size: slice_size + non_overlap_size]
+    slice0 = sorted(slice0, key=lambda x:x._qid)
+    slice1 = sorted(slice1, key=lambda x:x._qid)
 
     makedirs(args.output_dir)
     slice0_path = os.path.join(args.output_dir, 'train.slice0.txt')
