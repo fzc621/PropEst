@@ -9,7 +9,7 @@ def load_query(path):
             assert len(toks) == 3
             rel = int(toks[0])
             qid = int(toks[1].split(':')[1])
-            if len(queries) == 0 or queries[-1].equal_qid(qid) == False:
+            if not queries or not queries[-1].equal_qid(qid):
                 queries.append(Query(qid, (rel, toks[2])))
             else:
                 queries[-1].append((rel, toks[2]))
@@ -24,9 +24,12 @@ def dump_query(queries, path):
 
 class Query(object):
 
-    def __init__(self, qid, doc):
+    def __init__(self, qid, doc=None):
         self._qid = qid
-        self._docs = [doc]
+        if doc is None:
+            self._docs = []
+        else:
+            self._docs = [doc]
 
     def append(self, doc):
         self._docs.append(doc)
