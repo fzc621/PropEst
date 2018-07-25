@@ -8,4 +8,12 @@ input_dir="${DATA_DIR}/input"
 model_dir="${expt_dir}/model"
 log_dir="${expt_dir}/log"
 
-python -m src.prop_est --eta 1 -n 10 "${log_dir}" "${expt_dir}/result.txt"
+python -m src.prop_est --eta 1 -n 10 -a naive "${log_dir}" "${expt_dir}/result_n.txt"
+
+python -m src.prop_est --eta 1 -n 10 -a optimizer -m L-BFGS-B "${log_dir}" "${expt_dir}/result_o_l.txt"
+
+python -m src.prop_est --eta 1 -n 10 -a optimizer -m TNC "${log_dir}" "${expt_dir}/result_o_tnc.txt"
+
+python -m src.prop_est --eta 1 -n 10 -a optimizer -m SLSQP "${log_dir}" "${expt_dir}/result_o_slsqp.txt"
+
+# python -m src.prop_est --eta 1 -n 10 -a equitation "${log_dir}" "${expt_dir}/result_e.txt"
