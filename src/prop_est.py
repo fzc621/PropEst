@@ -19,9 +19,10 @@ if __name__ == '__main__':
     parser.add_argument('-n', default=10, type=int,
         help='number of top positions for which estimates are desired')
     parser.add_argument('-a', '--approach', default='equitation',
-                        choices=['naive', 'optimizer', 'equitation'])
+                        choices=['naive', 'optimizer', 'chain'])
     parser.add_argument('-m', '--method', default='TNC',
                         choices=['L-BFGS-B', 'TNC', 'SLSQP'])
+    parser.add_argument('-l', action='store_true', help='p_k / p_\{M/2\}')
     parser.add_argument('log_dir', help='click log dir')
     parser.add_argument('output_path', help='propensity result path')
     args = parser.parse_args()
@@ -29,6 +30,7 @@ if __name__ == '__main__':
     start = timeit.default_timer()
 
     M = args.n
+    l = M // 2 if args.l else 1
     log0_path = os.path.join(args.log_dir, 'log0.txt')
     log1_path = os.path.join(args.log_dir, 'log1.txt')
     log0 = load_log(log0_path)
@@ -117,34 +119,47 @@ if __name__ == '__main__':
                 return (k_ - 1) * M + k - 1
 
         def likelihood(x):
-            l = 0
-            for k in range(2, M + 1):
-                for k_ in range(2, M + 1):
+            r = 0
+            for k in range(1, M + 1):
+                for k_ in range(1, M + 1):
                     if k != k_:
-                        l += c[(k, k_)] * math.log(x[p_idx(k)] * x[r_idx(k, k_)])
-                        l += not_c[(k, k_)] * math.log(1 - x[p_idx(k)] * x[r_idx(k, k_)])
-            return -l
+                        r += c[(k, k_)] * math.log(x[p_idx(k)] * x[r_idx(k, k_)])
+                        r += not_c[(k, k_)] * math.log(1 - x[p_idx(k)] * x[r_idx(k, k_)])
+            return -r
 
         a, b = 1e-4, 1-1e-4
-        # x0 = [random.random() * (b - a) + a] * (M * M)
-        x0 = [0.5] * (M * M)
+        x0 = [random.random() * (b - a) + a] * (M * M)
         bnds = [(a, b)] * (M * M)
 
         ret = opt.minimize(likelihood, x0, method=args.method, bounds=bnds)
         xm = ret.x
-        prop_ = [xm[p_idx(k)] / xm[p_idx(1)] for k in range(1, M + 1)]
+        prop_ = [xm[p_idx(k)] / xm[p_idx(l)] for k in range(1, M + 1)]
 
     elif args.approach == 'naive':
-        prop_ = [1]
-        prop_.extend([c[(k,1)] / c[(1,k)] for k in range(2, M + 1)])
-    elif args.approach == 'equitation':
-        prop_ = [1]
-        prop_.extend([c[(k,1)] * (c[(1,k)] + not_c[(1,k)]) /
-            (c[(1,k)] * (c[(k,1)] + not_c[(k,1)])) for k in range(2, M + 1)])
+        prop_ = []
+        for k in range(1, M + 1):
+            if k == l:
+                prop_.append(1)
+            else:
+                prop_.append(c[(k,l)] / c[(l,k)])
+    elif args.approach == 'chain':
+        assert l == 1
+        prop_ = []
+        for k in range(1, M + 1):
+            if k == 1:
+                prop_.append(1)
+            else:
+                a = 1
+                b = 1
+                for r in range(1, k):
+                    a *= c[(r + 1, r)]
+                    b *= c[(r, r + 1)]
+                prop_.append(a / b)
     else:
         prop_ = [1] * M
 
-    prop = [pow(k, -1 * args.eta) for k in range(1, M + 1)]
+    pr = pow(l, -args.eta)
+    prop = [pow(k, -args.eta) / pr for k in range(1, M + 1)]
     with open(args.output_path, 'w') as fout:
         fout.write('p\tp_\n')
         for k in range(1, M + 1):
