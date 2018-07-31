@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     params = [c for c in os.scandir(args.param_dir)
                 if not c.name.startswith('.') and c.is_dir()]
-    columns = sorted([int(c.name) for c in params])
+    columns = sorted([c.name for c in params], key=float)
 
     k = args.k
     metric = {}

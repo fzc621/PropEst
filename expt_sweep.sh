@@ -30,9 +30,9 @@ for s in $sweeps; do
       python -m src.simulate_click --eta 1 --sweep ${s} --epsilon_p 1 \
         --epsilon_n 0.1 "${DATASET_DIR}/set1bin.train.txt" \
         "${run_dir}/score${i}.dat" "${log_dir}/log${i}.txt"
-      python -m src.prop_est --eta 1 -n 10 -a optimizer -m L-BFGS-B \
-        "${log_dir}" "${run_dir}/est.txt"
     done
+    python -m src.prop_est --eta 1 -n 10 -a optimizer -m L-BFGS-B \
+      "${log_dir}" "${run_dir}/est.txt"
   done
 done
 
