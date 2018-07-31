@@ -7,7 +7,7 @@ expt_dir="${DATA_DIR}/expt"
 param_dir="${expt_dir}/param"
 overlap_dir="${param_dir}/overlap"
 
-overlaps="0 0.2 0.5 0.8 1"
+overlaps="0 0.2 0.5 0.8 0.95"
 
 svm_dir="../svm_rank"
 svm_learn="${svm_dir}/svm_rank_learn"
