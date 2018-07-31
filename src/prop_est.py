@@ -161,9 +161,8 @@ if __name__ == '__main__':
     pr = pow(l, -args.eta)
     prop = [pow(k, -args.eta) / pr for k in range(1, M + 1)]
     with open(args.output_path, 'w') as fout:
-        fout.write('p\tp_\n')
         for k in range(1, M + 1):
             fout.write('{:.3f}\t{:.3f}\n'.format(prop[k - 1], prop_[k - 1]))
 
     end = timeit.default_timer()
-    print('Running time: {:.3}s.'.format(end - start))
+    print('Running time: {:.3f}s.'.format(end - start))

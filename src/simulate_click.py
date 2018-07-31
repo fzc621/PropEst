@@ -6,13 +6,15 @@ import random
 import timeit
 import argparse
 from .lib.data_utils import Query
-from .lib.utils import prob_test
+from .lib.utils import prob_test, makedirs
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='simulate the clicks')
     parser.add_argument('--eta', default=1.0, type=float,
                         help='the parameter controls the severity of bias')
+    parser.add_argument('-s', '--sweep', default=1, type=int,
+                        help='#sweeps of the dataset')
     parser.add_argument('--epsilon_p', default=1.0, type=float,
                         help='the prob of users click on a relevant result')
     parser.add_argument('--epsilon_n', default=0.1, type=float,
@@ -44,25 +46,27 @@ if __name__ == '__main__':
                 doc_id = len(queries[-1]._docs)
                 queries[-1].append((doc_id, score, rel))
 
+    makedirs(os.path.dirname(args.log_path))
     with open(args.log_path, 'w') as fout:
-        for query in queries:
-            qid = query._qid
-            docs = sorted(query._docs, key=lambda x: x[1], reverse=True)
-            for rk, sr in enumerate(docs, start=1):
-                pr = pos_pr[rk]
-                doc_id, _, rel = sr
-                clicked = False
-                if prob_test(pr):
-                    if rel:
-                        if prob_test(ep):
-                            clicked = True
+        for i in range(args.sweep):
+            for query in queries:
+                qid = query._qid
+                docs = sorted(query._docs, key=lambda x: x[1], reverse=True)
+                for rk, sr in enumerate(docs, start=1):
+                    pr = pos_pr[rk]
+                    doc_id, _, rel = sr
+                    clicked = False
+                    if prob_test(pr):
+                        if rel:
+                            if prob_test(ep):
+                                clicked = True
+                        else:
+                            if prob_test(en):
+                                clicked = True
+                    if clicked:
+                        fout.write('{} qid:{} {}\n'.format(1, qid, doc_id))
                     else:
-                        if prob_test(en):
-                            clicked = True
-                if clicked:
-                    fout.write('{} qid:{} {}\n'.format(1, qid, doc_id))
-                else:
-                    fout.write('{} qid:{} {}\n'.format(0, qid, doc_id))
+                        fout.write('{} qid:{} {}\n'.format(0, qid, doc_id))
 
     end = timeit.default_timer()
     print('Running time: {:.3f}s.'.format(end - start))
