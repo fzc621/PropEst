@@ -28,6 +28,8 @@ if __name__ == '__main__':
     ep = args.epsilon_p
     en = args.epsilon_n
 
+    random.seed()
+
     start = timeit.default_timer()
 
     pos_pr = {rk : pow(rk, -1 * args.eta) for rk in range(1, 1000)}
