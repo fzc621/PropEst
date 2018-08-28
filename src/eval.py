@@ -15,7 +15,7 @@ def read_prop(path):
     return y, y_
 
 def _MSE(y, y_):
-    return np.mean((y - y_) ** 2)
+    return np.mean((1 / y - 1 / y_) ** 2)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='eval the result')
